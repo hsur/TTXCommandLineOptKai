@@ -1,7 +1,6 @@
 # TTXCommandLineOptKai
 
-フォーラムでの「[マクロでの文字色と背景色の変更](https://ja.osdn.net/projects/ttssh2/forums/5841/21746/ "マクロでの文字色と背景色の変更")」の議論を参考に、
-[TTXCommandLineOpt](https://ja.osdn.net/projects/ttssh2/scm/svn/tree/head/tags/teraterm-4_86/TTXSamples/TTXCommandLineOpt/ "TTXCommandLineOpt") のコードをベースとして。太字や点滅の背景色も変更されるように対応させたものです。
+フォーラムでの「[マクロでの文字色と背景色の変更](https://ja.osdn.net/projects/ttssh2/forums/5841/21746/ "マクロでの文字色と背景色の変更")」の議論を参考に、[TTXCommandLineOpt](https://ja.osdn.net/projects/ttssh2/scm/svn/tree/head/tags/teraterm-4_86/TTXSamples/TTXCommandLineOpt/ "TTXCommandLineOpt") のコードをベースとして、太字や点滅の背景色も変更されるように対応させたものです。
 
 ## 使用方法
 
