@@ -26,9 +26,19 @@ static void PASCAL FAR TTXInit(PTTSet ts, PComVar cv) {
 }
 
 BOOL ColorStr2ColorRef(COLORREF *color, PCHAR Str) {
+	static enum ColorPreset {
+		R = 64,
+		G = 16384,
+		B = 6291456,
+		M = 6291520,
+		C = 6307840,
+		Y = 16448,
+		K = 0,
+		S = 4210752
+	} COLOR_PRESET;
   int TmpColor[3];
   int i, result;
-  PCHAR cur, next;
+  PCHAR cur, next, code;
 
   cur = Str;
 
@@ -44,8 +54,46 @@ BOOL ColorStr2ColorRef(COLORREF *color, PCHAR Str) {
     if (next)
       *next++ = ',';
 
-    if (result != 1 || TmpColor[i] < 0 || TmpColor[i] > 255)
-      return FALSE;
+	if (result != 1 || TmpColor[i] < 0 || TmpColor[i] > 255) {
+		result = sscanf_s(cur, "%c", &code, (unsigned)sizeof(code));
+		if (result == 1) {
+			if (_strnicmp(code, "R", 1) == 0) {
+				*color = R;
+				return TRUE;
+			}
+			else if (_strnicmp(code, "G", 1) == 0) {
+				*color = G;
+				return TRUE;
+			}
+			else if (_strnicmp(code, "B", 1) == 0) {
+				*color = B;
+				return TRUE;
+			}
+			else if (_strnicmp(code, "C", 1) == 0) {
+				*color = C;
+				return TRUE;
+			}
+			else if (_strnicmp(code, "M", 1) == 0) {
+				*color = M;
+				return TRUE;
+			}
+			else if (_strnicmp(code, "Y", 1) == 0) {
+				*color = Y;
+				return TRUE;
+			}
+			else if (_strnicmp(code, "K", 1) == 0) {
+				*color = K;
+				return TRUE;
+			}
+			else if (_strnicmp(code, "S", 1) == 0) {
+				*color = S;
+				return TRUE;
+			}
+			else {
+				return FALSE;
+			}
+		}
+	}
 
     cur = next;
   }
