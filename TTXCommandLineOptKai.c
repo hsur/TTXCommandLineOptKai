@@ -4,8 +4,7 @@
 #include "tt_res.h"
 #include <stdlib.h>
 #include <stdio.h>
-
-#include "compat_w95.h"
+#include <wchar.h>
 
 #define ORDER 5800
 
@@ -17,15 +16,15 @@ typedef struct {
   PParseParam origParseParam;
 } TInstVar;
 
-static TInstVar FAR * pvar;
+static TInstVar *pvar;
 static TInstVar InstVar;
 
-static void PASCAL FAR TTXInit(PTTSet ts, PComVar cv) {
+static void PASCAL TTXInit(PTTSet ts, PComVar cv) {
   pvar->ts = ts;
   pvar->cv = cv;
 }
 
-BOOL ColorStr2ColorRef(COLORREF *color, PCHAR Str) {
+static BOOL ColorStr2ColorRef(COLORREF *color, wchar_t *Str) {
 	static enum ColorPreset {
 		R = 64,
 		G = 16384,
@@ -38,7 +37,7 @@ BOOL ColorStr2ColorRef(COLORREF *color, PCHAR Str) {
 	} COLOR_PRESET;
   int TmpColor[3];
   int i, result;
-  PCHAR cur, next, code;
+  wchar_t *cur, *next, code[2];
 
   cur = Str;
 
@@ -46,46 +45,46 @@ BOOL ColorStr2ColorRef(COLORREF *color, PCHAR Str) {
     if (!cur)
       return FALSE;
 
-    if ((next = strchr(cur, ',')) != NULL)
+    if ((next = wcsrchr(cur, L',')) != NULL)
       *next = 0;
 
-    result = sscanf_s(cur, "%d", &TmpColor[i]);
+    result = swscanf_s(cur, L"%d", &TmpColor[i]);
 
     if (next)
       *next++ = ',';
 
 	if (result != 1 || TmpColor[i] < 0 || TmpColor[i] > 255) {
-		result = sscanf_s(cur, "%c", &code, (unsigned)sizeof(code));
+		result = swscanf_s(cur, L"%s", &code, (unsigned)sizeof(code));
 		if (result == 1) {
-			if (_strnicmp(code, "R", 1) == 0) {
+			if (_wcsnicmp(code, L"R", 1) == 0) {
 				*color = R;
 				return TRUE;
 			}
-			else if (_strnicmp(code, "G", 1) == 0) {
+			else if (_wcsnicmp(code, L"G", 1) == 0) {
 				*color = G;
 				return TRUE;
 			}
-			else if (_strnicmp(code, "B", 1) == 0) {
+			else if (_wcsnicmp(code, L"B", 1) == 0) {
 				*color = B;
 				return TRUE;
 			}
-			else if (_strnicmp(code, "C", 1) == 0) {
+			else if (_wcsnicmp(code, L"C", 1) == 0) {
 				*color = C;
 				return TRUE;
 			}
-			else if (_strnicmp(code, "M", 1) == 0) {
+			else if (_wcsnicmp(code, L"M", 1) == 0) {
 				*color = M;
 				return TRUE;
 			}
-			else if (_strnicmp(code, "Y", 1) == 0) {
+			else if (_wcsnicmp(code, L"Y", 1) == 0) {
 				*color = Y;
 				return TRUE;
 			}
-			else if (_strnicmp(code, "K", 1) == 0) {
+			else if (_wcsnicmp(code, L"K", 1) == 0) {
 				*color = K;
 				return TRUE;
 			}
-			else if (_strnicmp(code, "S", 1) == 0) {
+			else if (_wcsnicmp(code, L"S", 1) == 0) {
 				*color = S;
 				return TRUE;
 			}
@@ -94,7 +93,6 @@ BOOL ColorStr2ColorRef(COLORREF *color, PCHAR Str) {
 			}
 		}
 	}
-
     cur = next;
   }
 
@@ -102,9 +100,9 @@ BOOL ColorStr2ColorRef(COLORREF *color, PCHAR Str) {
   return TRUE;
 }
 
-static void PASCAL FAR TTXParseParam(PCHAR Param, PTTSet ts, PCHAR DDETopic) {
-  char buff[1024];
-  PCHAR start, cur, next;
+static void PASCAL TTXParseParam(wchar_t *Param, PTTSet ts, PCHAR DDETopic) {
+  wchar_t buff[1024];
+  wchar_t *start, *cur, *next;
   int x, y;
 
   /* the first term shuld be executable filename of Tera Term */
@@ -112,25 +110,20 @@ static void PASCAL FAR TTXParseParam(PCHAR Param, PTTSet ts, PCHAR DDETopic) {
 
   cur = start;
   while (next = GetParam(buff, sizeof(buff), cur)) {
-    if (_strnicmp(buff, "/FG=", 4) == 0) {
+    if (_wcsnicmp(buff, L"/FG=", 4) == 0) {
       ColorStr2ColorRef(&(ts->VTColor[0]), &buff[4]);
-	  memset(cur, ' ', next - cur);
+      wmemset(cur, ' ', next - cur);
     }
-    else if (_strnicmp(buff, "/BG=", 4) == 0) {
+    else if (_wcsnicmp(buff, L"/BG=", 4) == 0) {
       ColorStr2ColorRef(&(ts->VTColor[1]), &buff[4]);
-	  ColorStr2ColorRef(&(ts->VTBoldColor[1]), &buff[4]);
-	  ColorStr2ColorRef(&(ts->VTBlinkColor[1]), &buff[4]);
-	  ColorStr2ColorRef(&(ts->URLColor[1]), &buff[4]);
-	  ColorStr2ColorRef(&(ts->VTReverseColor[0]), &buff[4]);
-	  ts->VTReverseColor[1] = ts->VTColor[0];
-      memset(cur, ' ', next - cur);
+      wmemset(cur, ' ', next - cur);
     }
-    else if (_strnicmp(buff, "/SIZE=", 6) == 0) {
-      if (sscanf_s(buff+6, "%dx%d", &x, &y) == 2 || sscanf_s(buff+6, "%d,%d", &x, &y) == 2) {
-	ts->TerminalWidth = x;
-	ts->TerminalHeight = y;
+    else if (_wcsnicmp(buff, L"/SIZE=", 6) == 0) {
+      if (swscanf_s(buff+6, L"%dx%d", &x, &y) == 2 || swscanf_s(buff+6, L"%d,%d", &x, &y) == 2) {
+        ts->TerminalWidth = x;
+        ts->TerminalHeight = y;
       }
-      memset(cur, ' ', next - cur);
+      wmemset(cur, ' ', next - cur);
     }
     cur = next;
   }
@@ -138,7 +131,7 @@ static void PASCAL FAR TTXParseParam(PCHAR Param, PTTSet ts, PCHAR DDETopic) {
   pvar->origParseParam(Param, ts, DDETopic);
 }
 
-static void PASCAL FAR TTXGetSetupHooks(TTXSetupHooks FAR *hooks) {
+static void PASCAL TTXGetSetupHooks(TTXSetupHooks *hooks) {
   pvar->origParseParam = *hooks->ParseParam;
   *hooks->ParseParam = TTXParseParam;
 }
@@ -159,14 +152,14 @@ static TTXExports Exports = {
   NULL, // TTXEnd
 };
 
-BOOL __declspec(dllexport) PASCAL FAR TTXBind(WORD Version, TTXExports FAR * exports) {
+BOOL __declspec(dllexport) PASCAL TTXBind(WORD Version, TTXExports *exports) {
   int size = sizeof(Exports) - sizeof(exports->size);
 
   if (size > exports->size) {
     size = exports->size;
   }
-  memcpy((char FAR *)exports + sizeof(exports->size),
-    (char FAR *)&Exports + sizeof(exports->size),
+  memcpy((char *)exports + sizeof(exports->size),
+    (char *)&Exports + sizeof(exports->size),
     size);
   return TRUE;
 }
@@ -184,7 +177,6 @@ BOOL WINAPI DllMain(HANDLE hInstance,
       break;
     case DLL_PROCESS_ATTACH:
       /* do process initialization */
-      DoCover_IsDebuggerPresent();
       hInst = hInstance;
       pvar = &InstVar;
       break;
